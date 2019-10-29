@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.UI;
 
 public class ChessBoard : MonoBehaviour
 {
@@ -9,13 +10,14 @@ public class ChessBoard : MonoBehaviour
 
     // 地图格子
     public const int Max_LINE= 15;
+    public const int TimeLimit = 7;
     private int[,] grid;
     // 棋子
     public GameObject[] chessPrefabs;
     public float timer =0.0f;
     // 限定的反应时间
     public float PER_TIME = 0.3f; 
-    private bool isGameOver = false;
+    private bool isGameOver = true;
     // 统一管理棋子
     private Transform[,] chessMap = new Transform[Max_LINE, Max_LINE];
     // 悔棋存储
@@ -25,8 +27,14 @@ public class ChessBoard : MonoBehaviour
 
     public static ChessBoard Instance { get => _instance;}
     public ChessType CurTurn { get => curTurn;}
-    public bool IsGameOver { get => isGameOver;}
+    public bool IsGameOver { get => isGameOver; set => isGameOver = value; }
     public Stack<Transform> ChessStack { get => chessStack;}
+
+    // 结算界面
+    public GameObject OverPanel;
+    public Text ResultText;
+    // 下棋点的标识
+    public GameObject effectChess;
 
     public enum ChessType
     {
@@ -49,10 +57,18 @@ public class ChessBoard : MonoBehaviour
             _instance = this;
         }
         grid = new int[Max_LINE, Max_LINE];
+        effectChess.SetActive(false);
     }
 
     private void Update()
     {
+        // 标识跟随
+        if (chessStack.Count > 0)
+        {
+            if (!effectChess.activeSelf) effectChess.SetActive(true);
+            effectChess.transform.position = chessStack.Peek().position;
+        }
+
         if (IsGameOver) return;
         timer += Time.deltaTime;
     }
@@ -64,7 +80,7 @@ public class ChessBoard : MonoBehaviour
         //pos[0] = Mathf.Clamp(pos[0], 0, Max_LINE);
         //pos[1] = Mathf.Clamp(pos[1], 0, Max_LINE);
         // 枚举是整数类型，返回的哈希值刚好是整数值
-        if (grid[pos[0], pos[1]] != DotType.NONE.GetHashCode())
+        if (grid[pos[0], pos[1]] != (int)DotType.NONE)
         {
             Debug.Log("grid的值为:"+grid[pos[0], pos[1]]);
             return;
@@ -77,7 +93,7 @@ public class ChessBoard : MonoBehaviour
             Debug.Log("生成了黑色棋子");
             chessMap[pos[0], pos[1]] = prefabsB.transform;
             ChessStack.Push(prefabsB.transform);
-            grid[pos[0], pos[1]] = DotType.BLACK.GetHashCode();
+            grid[pos[0], pos[1]] = (int)DotType.BLACK;
             CheckChess(pos);
             curTurn = ChessType.White;
             timer = 0.0f;
@@ -89,28 +105,36 @@ public class ChessBoard : MonoBehaviour
             Debug.Log("生成了白色棋子");
             chessMap[pos[0], pos[1]] = prefabsW.transform;
             ChessStack.Push(prefabsW.transform);
-            grid[pos[0], pos[1]] = DotType.WHITE.GetHashCode();
+            grid[pos[0], pos[1]] = (int)DotType.WHITE;
             CheckChess(pos);
             curTurn = ChessType.Black;
             timer = 0.0f;
         }    
     }
 
-    public int GetDotType(int x, int y)
+    public int[,] GetGrid()
     {
-        return grid[x, y];
+        return grid;
     }
 
     // 检查是否可以消除
     private void CheckChess(int[] pos)
     {
         List<Transform> temList  = CheckAllLine(pos);
-        Debug.Log(temList.Count);
         if (temList.Count >= 4)
         {
             // 游戏结束
             isGameOver = true;
             Debug.Log("游戏结束");
+            if (CurTurn == ChessType.White)
+            {
+                ResultText.text = "白棋胜";
+            }
+            else if(CurTurn == ChessType.Black)
+            {
+                ResultText.text = "黑棋胜";
+            }
+            OverPanel.SetActive(true);
         }
     }
 
@@ -144,7 +168,7 @@ public class ChessBoard : MonoBehaviour
         for (int i = pos[0]+offpos[0], j = pos[1]+offpos[1]; i >=0&&i<Max_LINE&&j >= 0 && j <Max_LINE; i+=offpos[0],j+=offpos[1])
         {
             // 如果对应当前所下的棋子颜色
-            if (grid[i, j] == curTurn.GetHashCode())
+            if (grid[i, j] == (int)curTurn)
             {
                 temList.Add(chessMap[i, j]);
             }
@@ -157,7 +181,7 @@ public class ChessBoard : MonoBehaviour
         for (int i = pos[0] - offpos[0], j = pos[1] - offpos[1]; i >= 0 && i < Max_LINE && j >= 0 && j < Max_LINE; i -= offpos[0], j -= offpos[1])
         {
             // 如果对应当前所下的棋子颜色
-            if (grid[i, j] == curTurn.GetHashCode())
+            if (grid[i, j] == (int)curTurn)
             {
                 temList.Add(chessMap[i, j]);
             }
@@ -166,6 +190,7 @@ public class ChessBoard : MonoBehaviour
                 break;
             }
         }
+        // 返回List中未包含自身
         return temList;
     }
     // 悔棋操作
@@ -177,9 +202,10 @@ public class ChessBoard : MonoBehaviour
             int i = Mathf.FloorToInt(Max_LINE / 2);
             int posX = (int)temTs.position.x + i;
             int posY = (int)temTs.position.y + i;
-            grid[posX, posY] = DotType.NONE.GetHashCode();
+            grid[posX, posY] = (int)DotType.NONE;
             chessMap[posX, posY] = null;
             Destroy(temTs.gameObject);
         }
+        effectChess.SetActive(false);
     }
 }

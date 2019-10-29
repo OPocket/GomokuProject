@@ -29,7 +29,7 @@ public class Player : MonoBehaviour
             if (roundX >= 0 && roundX<max && roundY >= 0 && roundY < max)
             {
                 // 判断当前位置是否是空位置
-                if(ChessBoard.Instance.GetDotType(roundX, roundY) == ChessBoard.DotType.NONE.GetHashCode())
+                if(ChessBoard.Instance.GetGrid()[roundX, roundY] == (int)ChessBoard.DotType.NONE)
                 {
                     return new int[] { roundX, roundY };
                 }

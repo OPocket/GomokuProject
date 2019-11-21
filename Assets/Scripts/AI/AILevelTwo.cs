@@ -51,7 +51,7 @@ public class AILevelTwo : AILevelOne
 
     }
 
-    protected override float CheckOneLine(int[] pos, int[] offpos, ChessBoard.ChessType type)
+    protected override float CheckOneLine(int[] pos, int[] offpos, GameDefine.ChessType type)
     {
         string str = "a";
         int allTimes = 0;
@@ -77,7 +77,7 @@ public class AILevelTwo : AILevelOne
                         allTimes++;
                     }
                     // 如果对应为空棋子
-                    else if (ChessBoard.Instance.GetGrid()[ri, rj] == (int)ChessBoard.DotType.NONE)
+                    else if (ChessBoard.Instance.GetGrid()[ri, rj] == (int)GameDefine.DotType.NONE)
                     {
                         str += "_";
                         allTimes++;
@@ -118,7 +118,7 @@ public class AILevelTwo : AILevelOne
                         str = "a" + str;
                         allTimes++;
                     }
-                    else if (ChessBoard.Instance.GetGrid()[li, lj] == (int)ChessBoard.DotType.NONE)
+                    else if (ChessBoard.Instance.GetGrid()[li, lj] == (int)GameDefine.DotType.NONE)
                     {
                         str = "_" + str;
                         allTimes++;

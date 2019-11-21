@@ -8,6 +8,13 @@ public class MenuManager : MonoBehaviour
     public void SetPattern(int pattern)
     {
         PlayerPrefs.SetInt("Pattern", pattern);
-        SceneManager.LoadScene((int)GameDefine.SCENE_NUM.SCENE_GAME);
+        if (pattern == (int)GameDefine.PATTERN.PATTERN_NET)
+        {
+            SceneManager.LoadScene((int)GameDefine.SCENE_NUM.SCENE_NET);
+        }
+        else
+        {
+            SceneManager.LoadScene((int)GameDefine.SCENE_NUM.SCENE_GAME);
+        }
     }
 }

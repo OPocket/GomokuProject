@@ -13,29 +13,54 @@ public class GameManager : MonoBehaviour
         if (PlayerPrefs.HasKey("Pattern"))
         {
             gamePattern = (GameDefine.PATTERN)PlayerPrefs.GetInt("Pattern");
-            SetPlayer(gamePattern);
         }
+        // 初始化player的状态
+        int iChangeColor = 0;
+        if (PlayerPrefs.HasKey("ChangeColor"))
+        {
+            iChangeColor = PlayerPrefs.GetInt("ChangeColor");
+        }
+        SetPlayer(gamePattern, iChangeColor);
     }
 
-    public void SetPlayer(GameDefine.PATTERN pattern)
+    public void SetPlayer(GameDefine.PATTERN pattern, int isChangeColor)
     {
         switch (pattern)
         {
             case GameDefine.PATTERN.PATTERN_AI1:
-                playerList[0].chessType = ChessBoard.ChessType.Black;
-                playerList[2].chessType = ChessBoard.ChessType.White;
+                if (isChangeColor==0)
+                {
+                    SetPlayer(0, 2);
+                }
+                else
+                {
+                    SetPlayer(2, 0);
+                }
                 break;
             case GameDefine.PATTERN.PATTERN_AI2:
-                playerList[0].chessType = ChessBoard.ChessType.Black;
-                playerList[3].chessType = ChessBoard.ChessType.White;
+                if (isChangeColor == 0)
+                {
+                    SetPlayer(0, 3);
+                }
+                else
+                {
+                    SetPlayer(3, 0);
+                }
                 break;
             case GameDefine.PATTERN.PATTERN_AI3:
-                playerList[0].chessType = ChessBoard.ChessType.Black;
-                playerList[4].chessType = ChessBoard.ChessType.White;
+                if (isChangeColor == 0)
+                {
+                    SetPlayer(0, 4);
+                }
+                else
+                {
+                    SetPlayer(4, 0);
+                }
                 break;
             case GameDefine.PATTERN.PATTERN_DOUBLE:
-                playerList[0].chessType = ChessBoard.ChessType.Black;
-                playerList[1].chessType = ChessBoard.ChessType.White;
+                // 隐藏更换先手按钮
+
+                SetPlayer(0, 1);
                 break;
             case GameDefine.PATTERN.PATTERN_NET:
                 //playerList[0].chessType = ChessBoard.ChessType.Black;
@@ -43,6 +68,12 @@ public class GameManager : MonoBehaviour
             default:
                 break;
         }
+    }
+    // 设置黑棋或者白棋玩家
+    private void SetPlayer(int index0, int index1)
+    {
+        playerList[index0].chessType = GameDefine.ChessType.Black;
+        playerList[index1].chessType = GameDefine.ChessType.White;
     }
 
     // 返回首页
@@ -53,6 +84,20 @@ public class GameManager : MonoBehaviour
     // 重新开始
     public void Restart()
     {
+        SceneManager.LoadScene((int)GameDefine.SCENE_NUM.SCENE_GAME);
+    }
+    // 更换先手
+    public void ChangeFirstPlayer()
+    {
+        // 避免第一次进游戏不存在所存储的键值
+        if (PlayerPrefs.HasKey("ChangeColor"))
+        {
+            PlayerPrefs.SetInt("ChangeColor", PlayerPrefs.GetInt("ChangeColor") == 0 ? 1 : 0);
+        }
+        else
+        {
+            PlayerPrefs.SetInt("ChangeColor", 1);
+        }
         SceneManager.LoadScene((int)GameDefine.SCENE_NUM.SCENE_GAME);
     }
 }

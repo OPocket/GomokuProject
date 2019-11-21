@@ -13,7 +13,7 @@ public class AILevelOne : Player
     protected Dictionary<string, float> scoreDic = new Dictionary<string, float>();
     // 存储分数
     protected float[,] scoreValue = new float[ChessBoard.Max_LINE, ChessBoard.Max_LINE];
-    protected virtual void Start()
+    protected override void Start()
     {
         // 评分类型
         scoreDic.Add("_aaaaa_", float.MaxValue);
@@ -58,10 +58,10 @@ public class AILevelOne : Player
                 {
                     float temScore = 0;
                     // 如果当前位置可填充棋子
-                    if (ChessBoard.Instance.GetGrid()[i, j] == (int)ChessBoard.DotType.NONE)
+                    if (ChessBoard.Instance.GetGrid()[i, j] == (int)GameDefine.DotType.NONE)
                     {
                         // 优先评判自己棋子的收益值，因为出现等值情况时候，自己可以先下手取胜
-                        temScore = GetMaxScore(new int[]{i, j}, ChessBoard.ChessType.Black)+GetMaxScore(new int[] { i, j }, ChessBoard.ChessType.White);
+                        temScore = GetMaxScore(new int[]{i, j}, GameDefine.ChessType.Black)+GetMaxScore(new int[] { i, j }, GameDefine.ChessType.White);
                         if (temScore > maxScore)
                         {
                             maxScore = temScore;
@@ -74,7 +74,7 @@ public class AILevelOne : Player
             return pos;
         }
     }
-    private float GetMaxScore(int[] pos, ChessBoard.ChessType type)
+    private float GetMaxScore(int[] pos, GameDefine.ChessType type)
     {
         float temScore = 0;
         temScore +=CheckOneLine(pos, new int[2] { 1, 0 }, type);
@@ -85,7 +85,7 @@ public class AILevelOne : Player
     }
 
     // 进行评分
-    protected virtual float CheckOneLine(int[] pos, int[] offpos, ChessBoard.ChessType type)
+    protected virtual float CheckOneLine(int[] pos, int[] offpos, GameDefine.ChessType type)
     {
         string str = "a";
         // 正向检测：跳过第一次循环，避免重复存储监测点
@@ -128,5 +128,9 @@ public class AILevelOne : Player
             }
         }
         return temScore;
+    }
+    protected override void SetBackBtn()
+    {
+        
     }
 }

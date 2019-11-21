@@ -9,7 +9,7 @@ public class AILevelThree : Player
     //计算深度
     public int DeepCount = 3;
 
-    private void Start()
+    protected override void Start()
     {
         // 收益值类型
         // 连五
@@ -90,7 +90,7 @@ public class AILevelThree : Player
             return maxNode.pos;
         }
     }
-    private float GetMaxScore(int[,] grid, int[] pos, ChessBoard.ChessType type)
+    private float GetMaxScore(int[,] grid, int[] pos, GameDefine.ChessType type)
     {
         float temScore = 0;
         temScore += CheckOneLine(grid, pos, new int[2] { 1, 0 }, type);
@@ -101,7 +101,7 @@ public class AILevelThree : Player
     }
 
     // 进行评分 此时grid为假设的grid，在变化中，所以需要传入当前假设情况下的grid；
-    protected virtual float CheckOneLine(int[,] grid, int[] pos, int[] offpos, ChessBoard.ChessType type)
+    protected virtual float CheckOneLine(int[,] grid, int[] pos, int[] offpos, GameDefine.ChessType type)
     {
         string str = "a";
         int allTimes = 0;
@@ -127,7 +127,7 @@ public class AILevelThree : Player
                         allTimes++;
                     }
                     // 如果对应为空棋子
-                    else if (grid[ri, rj] == (int)ChessBoard.DotType.NONE)
+                    else if (grid[ri, rj] == (int)GameDefine.DotType.NONE)
                     {
                         str += "_";
                         allTimes++;
@@ -168,7 +168,7 @@ public class AILevelThree : Player
                         str = "a" + str;
                         allTimes++;
                     }
-                    else if (grid[li, lj] == (int)ChessBoard.DotType.NONE)
+                    else if (grid[li, lj] == (int)GameDefine.DotType.NONE)
                     {
                         str = "_" + str;
                         allTimes++;
@@ -211,7 +211,7 @@ public class AILevelThree : Player
         return temScore;
     }
     // 获取当前受益值最大或者最小Node列表
-    private List<AILevelNode> GetChildList(int[,] grid, bool isSelf, ChessBoard.ChessType type)
+    private List<AILevelNode> GetChildList(int[,] grid, bool isSelf, GameDefine.ChessType type)
     {
         List<AILevelNode> temList = new List<AILevelNode>();
         AILevelNode node;
@@ -220,7 +220,7 @@ public class AILevelThree : Player
         {
             for (int j = 0; j < ChessBoard.Max_LINE; j++)
             {
-                if (grid[i, j] != (int)ChessBoard.DotType.NONE)
+                if (grid[i, j] != (int)GameDefine.DotType.NONE)
                 {
                     continue;
                 }
@@ -232,12 +232,12 @@ public class AILevelThree : Player
                 if (isSelf)
                 {
                     // 最大分（当前位置的初始score = 白+黑的得分）
-                    node.score = (GetMaxScore(grid, pos, ChessBoard.ChessType.Black)+ GetMaxScore(grid, pos, ChessBoard.ChessType.White));
+                    node.score = (GetMaxScore(grid, pos, GameDefine.ChessType.Black)+ GetMaxScore(grid, pos, GameDefine.ChessType.White));
                 }
                 else
                 {
                     // 最小分 负号可取得最小值的点
-                    node.score = (-GetMaxScore(grid, pos, ChessBoard.ChessType.Black) - GetMaxScore(grid, pos, ChessBoard.ChessType.White));
+                    node.score = (-GetMaxScore(grid, pos, GameDefine.ChessType.Black) - GetMaxScore(grid, pos, GameDefine.ChessType.White));
                 }
                 // 取出极大极小点
                 if (temList.Count < 4)
@@ -322,5 +322,9 @@ public class AILevelThree : Player
             }
             return beta;
         }
+    }
+    protected override void SetBackBtn()
+    {
+
     }
 }

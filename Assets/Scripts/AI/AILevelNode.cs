@@ -7,5 +7,5 @@ public class AILevelNode
     public float score = 0.0f;
     public int[] pos;
     public List<AILevelNode> child;
-    public ChessBoard.ChessType chessType;
+    public GameDefine.ChessType chessType;
 }

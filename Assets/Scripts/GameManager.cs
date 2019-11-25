@@ -72,8 +72,8 @@ public class GameManager : MonoBehaviour
     // 设置黑棋或者白棋玩家
     private void SetPlayer(int index0, int index1)
     {
-        playerList[index0].chessType = GameDefine.ChessType.Black;
-        playerList[index1].chessType = GameDefine.ChessType.White;
+        playerList[index0].ChessType = GameDefine.ChessType.Black;
+        playerList[index1].ChessType = GameDefine.ChessType.White;
     }
 
     // 返回首页

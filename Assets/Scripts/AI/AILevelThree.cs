@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AILevelThree : Player
+public class AILevelThree :Player
 {
     // 根据位值类型分值
     private Dictionary<string, float> scoreDic = new Dictionary<string, float>();
@@ -69,7 +69,7 @@ public class AILevelThree : Player
         {
             AILevelNode maxNode = null;
             int[,] temGrid = (int[,])ChessBoard.Instance.GetGrid();
-            foreach (AILevelNode child in GetChildList(temGrid, true, chessType))
+            foreach (AILevelNode child in GetChildList(temGrid, true, ChessType))
             {
                 // 创建树 子节点为非自己，所以用false;
                 // 每个grid都为独立不同的方案，为了不影响独立的grid，所以Clone();
@@ -325,6 +325,6 @@ public class AILevelThree : Player
     }
     protected override void SetBackBtn()
     {
-
+        
     }
 }

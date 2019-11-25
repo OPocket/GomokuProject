@@ -7,7 +7,7 @@ using UnityEngine;
  * 平局情况处理统一处理
  */
 
-public class AILevelOne : Player
+public class AILevelOne :Player
 {
     // 根据位值类型分值
     protected Dictionary<string, float> scoreDic = new Dictionary<string, float>();

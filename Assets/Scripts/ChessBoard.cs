@@ -185,25 +185,24 @@ public class ChessBoard : MonoBehaviour
     // 悔棋操作
     public void ChessBack()
     {
-        if (ChessStack.Count > 0)
+        if (ChessStack.Count >= 2)
         {
             effectChess.SetActive(false);
             // 删除最近一次自己和对方的棋子,所以执行两次DoBack；
             DoBack();
             DoBack();
         }
+        Debug.Log("ChessStack.Count:" + ChessStack.Count);
     }
     private void DoBack()
     {
-        if (ChessStack.Count >= 1)
-        {
-            Transform temTs = ChessStack.Pop();
-            int i = Mathf.FloorToInt(Max_LINE / 2);
-            int posX = (int)temTs.position.x + i;
-            int posY = (int)temTs.position.y + i;
-            grid[posX, posY] = (int)GameDefine.DotType.NONE;
-            chessMap[posX, posY] = null;
-            Destroy(temTs.gameObject);
-        }
+        Transform temTs = ChessStack.Pop();
+        int i = Mathf.FloorToInt(Max_LINE / 2);
+        int posX = (int)temTs.position.x + i;
+        int posY = (int)temTs.position.y + i;
+        grid[posX, posY] = (int)GameDefine.DotType.NONE;
+        chessMap[posX, posY] = null;
+        Destroy(temTs.gameObject);
+        temTs = null;
     }
 }

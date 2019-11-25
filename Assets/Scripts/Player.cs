@@ -5,15 +5,28 @@ using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
-    public GameDefine.ChessType chessType = GameDefine.ChessType.Black;
+    private GameDefine.ChessType chessType;// = GameDefine.ChessType.Black;
     // AI不需要悔棋
-    private GameObject backBtnObj;
+    private Button backBtn;
     private GameObject changeColorObj;
     private GameDefine.PATTERN pattern;
-     
+
+    public GameDefine.ChessType ChessType
+    {
+        get
+        {
+            return chessType;
+        }
+
+        set
+        {
+            chessType = value;
+        }
+    }
+
     protected virtual void Start()
     {
-        backBtnObj = GameObject.Find("Canvas/BackBtn");
+        backBtn = GameObject.Find("Canvas/BackBtn").GetComponent<Button>();
         changeColorObj = GameObject.Find("Canvas/ChangeButton");
         Debug.Log("backBtn");
         if (PlayerPrefs.HasKey("Pattern"))
@@ -21,9 +34,9 @@ public class Player : MonoBehaviour
             pattern = (GameDefine.PATTERN)PlayerPrefs.GetInt("Pattern");
             if (pattern == GameDefine.PATTERN.PATTERN_DOUBLE)
             {
-                if (backBtnObj)
+                if (backBtn)
                 {
-                    backBtnObj.SetActive(false);
+                    backBtn.gameObject.SetActive(false);
                 }
                 if (changeColorObj)
                 {
@@ -36,16 +49,20 @@ public class Player : MonoBehaviour
     protected virtual void FixedUpdate()
     {
         if (ChessBoard.Instance.IsGameOver) return;
-        // 当前对应走棋方
-        if (chessType == ChessBoard.Instance.CurTurn && ChessBoard.Instance.timer >= ChessBoard.Instance.PER_TIME)
-        {
-            ChessBoard.Instance.PlayChess(CheckClickPos());
-        }
-        // 是否置黑悔棋按钮
+
+        // 是否置黑悔棋按钮(注：不能至于PlayChess之后，因为 if (temPos == null) return;)
         if (pattern != GameDefine.PATTERN.PATTERN_DOUBLE)
         {
             // 避免未下棋时，显示悔棋按钮
             SetBackBtn();
+        }
+
+        // 当前对应走棋方
+        if (chessType == ChessBoard.Instance.CurTurn && ChessBoard.Instance.timer >= ChessBoard.Instance.PER_TIME)
+        {
+            int[] temPos = CheckClickPos();
+            if (temPos == null) return;
+            ChessBoard.Instance.PlayChess(temPos);
         }
     }
 
@@ -82,13 +99,13 @@ public class Player : MonoBehaviour
         {
             return;
         }
-        else if (chessType == ChessBoard.Instance.CurTurn && ChessBoard.Instance.ChessStack.Count >= 2)
+        else if (chessType == ChessBoard.Instance.CurTurn && ChessBoard.Instance.ChessStack.Count >= 2 && !ChessBoard.Instance.IsGameOver)
         {
-            if (backBtnObj.activeSelf) backBtnObj.GetComponent<Button>().interactable = true;
+            if (backBtn.gameObject.activeSelf) backBtn.interactable = true;
         }
         else
         {
-            if (backBtnObj.activeSelf) backBtnObj.GetComponent<Button>().interactable = false;
+            if (backBtn.gameObject.activeSelf) backBtn.interactable = false;
         }
     }
 }

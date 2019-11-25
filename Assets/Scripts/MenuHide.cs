@@ -9,7 +9,7 @@ public class MenuHide : MonoBehaviour
         gameObject.SetActive(false);
         if (PlayerPrefs.GetInt("Pattern") == (int)GameDefine.PATTERN.PATTERN_NET)
         {
-            NetChessBoard.Instance.IsGameOver = false;
+            NetChessBoard.Instance.isGameOver = false;
             Debug.Log("IsGameOver = false");
         }
         else

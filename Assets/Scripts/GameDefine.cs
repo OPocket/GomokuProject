@@ -18,7 +18,8 @@ public class GameDefine
     {
         SCENE_MENU,
         SCENE_GAME,
-        SCENE_NET
+        SCENE_NET,
+        SCENE_LOBBY
     }
     // 玩家类型
     public enum ChessType

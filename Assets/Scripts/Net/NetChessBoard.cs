@@ -18,8 +18,8 @@ public class NetChessBoard : NetworkBehaviour
     public float timer = 0.0f;
     // 限定的反应时间
     public float PER_TIME = 0.3f;
-
-    private bool isGameOver = true;
+    [SyncVar]
+    public bool isGameOver = false;
     // 统一管理棋子
     private Transform[,] chessMap = new Transform[Max_LINE, Max_LINE];
     // 悔棋存储
@@ -29,7 +29,7 @@ public class NetChessBoard : NetworkBehaviour
 
     public static NetChessBoard Instance { get { return _instance; } }
     //public GameDefine.ChessType CurTurn { get { return curTurn; } }
-    public bool IsGameOver { get { return isGameOver; } set { isGameOver = value; } }
+    //public bool IsGameOver { get { return isGameOver; } set { isGameOver = value; } }
     public Stack<Transform> ChessStack { get { return chessStack; } }
 
     // 结算界面
@@ -39,7 +39,8 @@ public class NetChessBoard : NetworkBehaviour
     public GameObject effectChess;
     // 玩家编号
     [SyncVar]
-    public int PlayerNumber;// = 0;
+    public int PlayerNumber= 0;
+    private NetworkManager manager;
 
     private void Awake()
     {
@@ -51,6 +52,18 @@ public class NetChessBoard : NetworkBehaviour
         effectChess.SetActive(false);
     }
 
+    private void Start()
+    {
+        if (!manager)
+        {
+            manager = NetworkManager.singleton;
+            if (manager.matchMaker == null)
+            {
+                manager.StartMatchMaker();
+            }
+        }
+    }
+
     private void Update()
     {
         // 标识跟随
@@ -60,7 +73,7 @@ public class NetChessBoard : NetworkBehaviour
             effectChess.transform.position = chessStack.Peek().position;
         }
 
-        if (IsGameOver)
+        if (isGameOver)
         {
             return;
         }
@@ -69,11 +82,10 @@ public class NetChessBoard : NetworkBehaviour
 
     public void PlayChess(int[] pos)
     {
-        if (pos == null || IsGameOver) return;
+        if (pos == null || isGameOver) return;
         // 限制当前值在0和Max_LINE之间
         //pos[0] = Mathf.Clamp(pos[0], 0, Max_LINE);
         //pos[1] = Mathf.Clamp(pos[1], 0, Max_LINE);
-        // 枚举是整数类型，返回的哈希值刚好是整数值
         if (grid[pos[0], pos[1]] != (int)GameDefine.DotType.NONE)
         {
             Debug.Log("grid的值为:" + grid[pos[0], pos[1]]);
@@ -86,12 +98,18 @@ public class NetChessBoard : NetworkBehaviour
             GameObject prefabsB = Instantiate(chessPrefabs[0], new Vector3(pos[0] - i, pos[1] - i, 0), Quaternion.identity);
             NetworkServer.Spawn(prefabsB);
             Debug.Log("生成了黑色棋子");
+            chessStack.Push(prefabsB.transform);
             chessMap[pos[0], pos[1]] = prefabsB.transform;
-            ChessStack.Push(prefabsB.transform);
             grid[pos[0], pos[1]] = (int)GameDefine.DotType.BLACK;
-            CheckChess(pos);
-            curTurn = GameDefine.ChessType.White;
-            timer = 0.0f;
+            if (CheckChess(pos))
+            {
+                isGameOver = true;
+            }
+            else
+            {
+                curTurn = GameDefine.ChessType.White;
+                timer = 0.0f;
+            }
         }
         else if (curTurn == GameDefine.ChessType.White)
         {
@@ -99,12 +117,18 @@ public class NetChessBoard : NetworkBehaviour
             GameObject prefabsW = Instantiate(chessPrefabs[1], new Vector3(pos[0] - i, pos[1] - i, 0), Quaternion.identity);
             NetworkServer.Spawn(prefabsW);
             Debug.Log("生成了白色棋子");
+            chessStack.Push(prefabsW.transform);
             chessMap[pos[0], pos[1]] = prefabsW.transform;
-            ChessStack.Push(prefabsW.transform);
             grid[pos[0], pos[1]] = (int)GameDefine.DotType.WHITE;
-            CheckChess(pos);
-            curTurn = GameDefine.ChessType.Black;
-            timer = 0.0f;
+            if (CheckChess(pos))
+            {
+                isGameOver = true;
+            }
+            else
+            {
+                curTurn = GameDefine.ChessType.Black;
+                timer = 0.0f;
+            }
         }
     }
 
@@ -114,24 +138,28 @@ public class NetChessBoard : NetworkBehaviour
     }
 
     // 检查是否可以消除
-    private void CheckChess(int[] pos)
+    private bool CheckChess(int[] pos)
     {
         List<Transform> temList = CheckAllLine(pos);
         if (temList.Count >= 4)
         {
             // 游戏结束
-            isGameOver = true;
             Debug.Log("游戏结束");
-            if (curTurn == GameDefine.ChessType.White)
-            {
-                ResultText.text = "白棋胜";
-            }
-            else if (curTurn == GameDefine.ChessType.Black)
-            {
-                ResultText.text = "黑棋胜";
-            }
-            OverPanel.SetActive(true);
+            return true;
         }
+        return false;
+    }
+    public void GameEnd()
+    {
+        if (curTurn == GameDefine.ChessType.White)
+        {
+            ResultText.text = "白棋胜";
+        }
+        else if (curTurn == GameDefine.ChessType.Black)
+        {
+            ResultText.text = "黑棋胜";
+        }
+        OverPanel.SetActive(true);
     }
 
     // 检测所有方向
@@ -192,25 +220,29 @@ public class NetChessBoard : NetworkBehaviour
     // 悔棋操作
     public void ChessBack()
     {
-        if (ChessStack.Count > 0)
+        if (chessStack.Count >= 2)
         {
             effectChess.SetActive(false);
             // 删除最近一次自己和对方的棋子,所以执行两次DoBack；
             DoBack();
             DoBack();
         }
+        Debug.Log("chessStack.Count:  " + chessStack.Count);
     }
     private void DoBack()
     {
-        if (ChessStack.Count >= 2)
-        {
-            Transform temTs = ChessStack.Pop();
-            int i = Mathf.FloorToInt(Max_LINE / 2);
-            int posX = (int)temTs.position.x + i;
-            int posY = (int)temTs.position.y + i;
-            grid[posX, posY] = (int)GameDefine.DotType.NONE;
-            chessMap[posX, posY] = null;
-            Destroy(temTs.gameObject);
-        }
+        Transform temTs = chessStack.Pop();
+        int i = Mathf.FloorToInt(Max_LINE / 2);
+        int posX = (int)temTs.position.x + i;
+        int posY = (int)temTs.position.y + i;
+        grid[posX, posY] = (int)GameDefine.DotType.NONE;
+        chessMap[posX, posY] = null;
+        Destroy(temTs.gameObject);
     }
+    public void OnQuitBtnClick()
+    {
+        manager.matchMaker.DropConnection(manager.matchInfo.networkId, manager.matchInfo.nodeId, 0, manager.OnDropConnection);
+        manager.StopHost();
+    }
+
 }
